@@ -398,29 +398,22 @@ npm install</code></pre>
     <section id="quick-win-1">
       <div class="quick-win">
         <h3>Quick Win #1: Your First Backup <span class="badge">5 min</span></h3>
-        <p class="lead">Let's create a backup repository and back up some files.</p>
-
-        <h4>Create a test folder with some files</h4>
-        <pre><code><span class="comment"># Create sample data to back up</span>
-mkdir -p ~/test-data
-echo "Hello, World!" > ~/test-data/greeting.txt
-echo "Important notes" > ~/test-data/notes.txt
-cp ~/.bashrc ~/test-data/  <span class="comment"># copy a real file</span></code></pre>
+        <p class="lead">Let's back up your Documents folder.</p>
 
         <h4>Initialize a backup repository</h4>
         <pre><code><span class="comment"># Create and initialize the backup location</span>
 borg-anchor init ~/backups</code></pre>
         <p>This creates a new directory with a Borg repository inside. You'll see output like:</p>
-        <pre><code>  Initializing borg-anchor in /home/you/my-backups
+        <pre><code>  Initializing borg-anchor in /home/you/backups
 
-  Creating borg repo: /home/you/my-backups/repo
+  Creating borg repo: /home/you/backups/repo
   ✓ Borg repository created
   ✓ Config saved: .borg-anchor.json
   ✓ Git initialized</code></pre>
 
         <h4>Create your first backup</h4>
-        <pre><code><span class="comment"># Back up ~/test-data to ~/backups</span>
-borg-anchor backup ~/test-data ~/backups --name my-backup --no-anchor</code></pre>
+        <pre><code><span class="comment"># Back up ~/Documents to ~/backups</span>
+borg-anchor backup ~/Documents ~/backups --name my-backup --no-anchor</code></pre>
 
         <div class="callout callout-success">
           <p><strong>You did it!</strong></p>
@@ -500,16 +493,13 @@ blocktrails show</code></pre>
         <p class="lead">Now let's anchor a backup on Bitcoin testnet.</p>
 
         <h4>Create a Bitcoin-timestamped backup</h4>
-        <pre><code><span class="comment"># Add some new content</span>
-echo "Updated: $(date)" >> ~/test-data/notes.txt
-
-<span class="comment"># Back up WITH Bitcoin anchoring</span>
-borg-anchor backup ~/test-data ~/backups --name anchored-backup</code></pre>
+        <pre><code><span class="comment"># Back up WITH Bitcoin anchoring</span>
+borg-anchor backup ~/Documents ~/backups --name my-backup-anchored</code></pre>
 
         <p>The output will show the fingerprint being anchored:</p>
-        <pre><code>  Creating backup: anchored-backup
-  Source: /home/you/test-data
-  Repo: /home/you/my-backups/repo
+        <pre><code>  Creating backup: my-backup-anchored
+  Source: /home/you/Documents
+  Repo: /home/you/backups/repo
 
   Fingerprint: 7a3b9c...
 
@@ -517,7 +507,7 @@ borg-anchor backup ~/test-data ~/backups --name anchored-backup</code></pre>
   ✓ Backup complete!</code></pre>
 
         <h4>Verify it's anchored</h4>
-        <pre><code>borg-anchor verify anchored-backup</code></pre>
+        <pre><code>borg-anchor verify my-backup-anchored ~/backups</code></pre>
 
         <div class="callout callout-success">
           <p><strong>Your backup is now on Bitcoin!</strong></p>
@@ -533,15 +523,13 @@ borg-anchor backup ~/test-data ~/backups --name anchored-backup</code></pre>
         <p class="lead">The whole point of backups - getting your data back.</p>
 
         <h4>Restore to a new location</h4>
-        <pre><code><span class="comment"># Create a restore destination</span>
-mkdir ~/restored-data
-
-<span class="comment"># Restore your backup</span>
-borg-anchor restore my-backup ~/restored-data</code></pre>
+        <pre><code><span class="comment"># Restore your backup to ~/restored/</span>
+borg-anchor restore my-backup ~/restored ~/backups</code></pre>
 
         <h4>Check the restored files</h4>
-        <pre><code>ls ~/restored-data/
-cat ~/restored-data/home/you/test-data/greeting.txt</code></pre>
+        <pre><code>ls ~/restored/
+<span class="comment"># Your files are under the original path structure:</span>
+ls ~/restored/home/you/Documents/</code></pre>
 
         <div class="callout callout-success">
           <p><strong>Data restored!</strong></p>
