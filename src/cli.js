@@ -313,6 +313,12 @@ function restore(archiveName, destPath, repoPath) {
   const { config } = getConfigFromPath(repoPath);
 
   const dest = resolve(process.cwd(), destPath || '.');
+
+  // Create destination if it doesn't exist
+  if (!existsSync(dest)) {
+    mkdirSync(dest, { recursive: true });
+  }
+
   console.log(`\n  Restoring ${archiveName} to ${dest}\n`);
 
   execSync(`cd ${dest} && borg extract ${config.repo}::${archiveName}`, { stdio: 'inherit' });
