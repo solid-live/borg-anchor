@@ -254,10 +254,10 @@ borg-anchor backup ~/Documents/ ~/backups/ --name my-backup --no-anchor</code></
       <div class="step-box">
         <h3><span class="step-num">3</span> Verify & Restore</h3>
         <pre><code><span class="comment"># List your backups</span>
-borg-anchor list
+borg-anchor list ~/backups/
 
 <span class="comment"># Restore to a new location</span>
-borg-anchor restore my-first-backup ~/restored</code></pre>
+borg-anchor restore my-backup ~/restored/ ~/backups/</code></pre>
       </div>
     </section>
 
@@ -279,10 +279,10 @@ borg-anchor backup ~/mydata ~/backups/
 borg-anchor backup ~/mydata ~/backups/ --name daily-backup
 
 <span class="comment"># View backups</span>
-borg-anchor list
+borg-anchor list ~/backups/
 
 <span class="comment"># Restore</span>
-borg-anchor restore my-first-backup ~/destination</code></pre>
+borg-anchor restore my-backup ~/destination ~/backups/</code></pre>
     </section>
 
     <div class="next-section">
