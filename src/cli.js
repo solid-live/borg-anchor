@@ -60,6 +60,12 @@ function getArchiveFingerprint(repo, archive) {
   return match ? match[1] : null;
 }
 
+function getArchiveSource(repo, archive) {
+  const output = borgExec(`info ${repo}::${archive}`);
+  const match = output.match(/Command line:.*::\S+\s+(.+)/);
+  return match ? match[1].trim() : null;
+}
+
 function listArchives(repo) {
   const output = borgExec(`list --format '{archive}{TAB}{time}{NL}' ${repo}`);
   return output.trim().split('\n').filter(Boolean).map(line => {
@@ -247,7 +253,9 @@ function list(path) {
   const archives = listArchives(config.repo);
   for (const { archive, time } of archives) {
     const fingerprint = getArchiveFingerprint(config.repo, archive);
+    const source = getArchiveSource(config.repo, archive);
     console.log(`\n  ${archive}`);
+    console.log(`    Source: ${source}`);
     console.log(`    Time: ${time}`);
     console.log(`    Fingerprint: ${fingerprint}`);
   }
