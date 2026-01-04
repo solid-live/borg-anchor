@@ -1,5 +1,5 @@
 {
-  "name": "@solid-live/borg-anchor",
+  "name": "borg-anchor",
   "version": "0.0.1",
   "description": "Borg backups with Bitcoin timestamping - your data lives on forever",
   "type": "module",

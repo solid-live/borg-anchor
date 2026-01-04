@@ -1,6 +1,6 @@
 # borg-anchor
 
-[![npm version](https://img.shields.io/npm/v/@solid-live/borg-anchor.svg)](https://www.npmjs.com/package/@solid-live/borg-anchor)
+[![npm version](https://img.shields.io/npm/v/borg-anchor.svg)](https://www.npmjs.com/package/borg-anchor)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 Borg backups with Bitcoin timestamping. Your data lives on forever.
@@ -24,7 +24,7 @@ Your Data → Borg Backup → Bitcoin Anchor → Immortal Proof
 ## Installation
 
 ```bash
-npm install -g @solid-live/borg-anchor
+npm install -g borg-anchor
 ```
 
 ### Prerequisites
@@ -139,6 +139,6 @@ AGPL-3.0
 
 - [Documentation](https://solid-live.github.io/borg-anchor/)
 - [GitHub](https://github.com/solid-live/borg-anchor)
-- [npm](https://www.npmjs.com/package/@solid-live/borg-anchor)
+- [npm](https://www.npmjs.com/package/borg-anchor)
 - [BorgBackup](https://borgbackup.readthedocs.io/)
 - [solid.live](https://solid.live)
