@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Start - borg-anchor</title>
+  <meta name="description" content="Get started with borg-anchor in 5 minutes">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #2d3748;
+      --muted: #718096;
+      --accent: #3182ce;
+      --accent-light: #ebf4ff;
+      --border: #e2e8f0;
+      --code-bg: #1a202c;
+      --code-text: #e2e8f0;
+      --success: #48bb78;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    nav a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    nav .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 0 3rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+    .time-badge {
+      display: inline-block;
+      background: var(--success);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .what-is {
+      background: var(--accent-light);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+    .what-is p {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin: 0;
+    }
+
+    section {
+      margin: 2rem 0;
+    }
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    h3 {
+      font-size: 1.3rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--text);
+    }
+    p {
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.5rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 1rem 0;
+    }
+    code {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: var(--accent-light);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    .comment { color: #68d391; }
+
+    .step-box {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+    .step-box h3 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .step-num {
+      background: var(--accent);
+      color: white;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .callout {
+      background: #f0fff4;
+      border-left: 4px solid var(--success);
+      padding: 1rem 1.5rem;
+      border-radius: 4px;
+      margin: 1.5rem 0;
+    }
+    .callout p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .next-section {
+      background: linear-gradient(135deg, var(--accent-light), #f0fff4);
+      border-radius: 8px;
+      padding: 2rem;
+      margin: 3rem 0;
+      text-align: center;
+    }
+    .next-section h2 {
+      margin-bottom: 1rem;
+    }
+    .next-section p {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+      margin: 0.5rem;
+    }
+    .btn:hover {
+      background: #2c5aa0;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: white;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+    .btn-secondary:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html" class="brand">borg-anchor</a>
+      <div>
+        <a href="getting-started.html" style="margin-right: 1rem;">Full Guide</a>
+        <a href="https://github.com/solid-live/borg-anchor">GitHub</a>
+      </div>
+    </nav>
+
+    <header>
+      <h1>Quick Start</h1>
+      <p class="subtitle">Your first backup in under 5 minutes</p>
+      <span class="time-badge">⏱ 5 minutes</span>
+    </header>
+
+    <div class="what-is">
+      <p><strong>borg-anchor</strong> creates deduplicated, compressed backups and timestamps them on Bitcoin for proof of existence.</p>
+    </div>
+
+    <section>
+      <div class="step-box">
+        <h3><span class="step-num">1</span> Install</h3>
+        <pre><code><span class="comment"># Install BorgBackup</span>
+brew install borgbackup        <span class="comment"># macOS</span>
+sudo apt install borgbackup    <span class="comment"># Ubuntu/Debian</span>
+
+<span class="comment"># Install borg-anchor</span>
+npm install -g borg-anchor</code></pre>
+      </div>
+
+      <div class="step-box">
+        <h3><span class="step-num">2</span> Create Your First Backup</h3>
+        <pre><code><span class="comment"># Initialize a backup repository</span>
+borg-anchor init ~/backups
+
+<span class="comment"># Back up a folder (Bitcoin timestamping skipped for now)</span>
+borg-anchor backup ~/Documents --name my-first-backup --no-anchor</code></pre>
+        <p>That's it! Your data is now backed up with deduplication and compression.</p>
+      </div>
+
+      <div class="step-box">
+        <h3><span class="step-num">3</span> Verify & Restore</h3>
+        <pre><code><span class="comment"># List your backups</span>
+borg-anchor list
+
+<span class="comment"># Restore to a new location</span>
+borg-anchor restore my-first-backup ~/restored</code></pre>
+      </div>
+    </section>
+
+    <div class="callout">
+      <p><strong>🎉 You're done!</strong> You now have a working Borg backup. Files are deduplicated (same file stored once) and compressed automatically.</p>
+    </div>
+
+    <section>
+      <h2>What Just Happened?</h2>
+      <p><strong>borg-anchor init</strong> created a repository at <code>~/backups/repo/</code> where all your backups are stored.</p>
+      <p><strong>borg-anchor backup</strong> created an archive (a snapshot) of your Documents folder. If you run it again, only <em>changed files</em> are stored.</p>
+      <p><strong>borg-anchor restore</strong> extracts your files exactly as they were when backed up.</p>
+    </section>
+
+    <section>
+      <h2>Common Commands</h2>
+      <pre><code><span class="comment"># Create backups</span>
+borg-anchor backup ~/mydata
+borg-anchor backup ~/mydata --name daily-backup
+
+<span class="comment"># View backups</span>
+borg-anchor list
+
+<span class="comment"># Restore</span>
+borg-anchor restore my-first-backup ~/destination</code></pre>
+    </section>
+
+    <div class="next-section">
+      <h2>Ready for Bitcoin Timestamping?</h2>
+      <p>Add cryptographic proof that your backups existed at a specific point in time by anchoring them on Bitcoin.</p>
+      <a href="getting-started.html#quick-win-2" class="btn">Set Up Bitcoin Anchoring</a>
+      <a href="index.html" class="btn btn-secondary">Full Documentation</a>
+    </div>
+
+    <section>
+      <h2>Why Borg?</h2>
+      <p><strong>Deduplication:</strong> If you backup the same 1GB file 10 times, it only takes 1GB of space.</p>
+      <p><strong>Compression:</strong> Data is automatically compressed. A 100GB backup might only use 30GB.</p>
+      <p><strong>Speed:</strong> After the first backup, subsequent backups are extremely fast since only changes are stored.</p>
+      <p><strong>Encryption:</strong> Add <code>--encryption repokey</code> when initializing for AES-256 encryption.</p>
+    </section>
+
+    <section>
+      <h2>Troubleshooting</h2>
+      <h3>borg: command not found</h3>
+      <p>Install BorgBackup with your package manager: <code>brew install borgbackup</code> or <code>sudo apt install borgbackup</code></p>
+
+      <h3>No config found</h3>
+      <p>Make sure you're in the backup directory or run <code>borg-anchor init</code> first.</p>
+
+      <h3>Need help?</h3>
+      <p>Check the <a href="getting-started.html">full getting started guide</a> or visit <a href="https://github.com/solid-live/borg-anchor">GitHub</a>.</p>
+    </section>
+
+    <footer>
+      <p>AGPL-3.0 &copy; 2026 <a href="https://melvincarvalho.com">Melvin Carvalho</a></p>
+      <p style="margin-top: 0.5rem;">Part of the <a href="https://solid.live">solid.live</a> ecosystem</p>
+    </footer>
+  </div>
+</body>
+</html>
