@@ -46,7 +46,10 @@ git config nostr.privkey <your-hex-privkey>
 # Create your first backup
 borg-anchor backup ~/mydata --name first-backup
 
-# List all backups
+# View all projects and backups
+borg-anchor info
+
+# List backups in current project
 borg-anchor list
 
 # Verify a backup is anchored
@@ -60,6 +63,7 @@ borg-anchor restore first-backup /tmp/restore
 
 | Command | Description |
 |---------|-------------|
+| `info` | Dashboard of all projects and backups |
 | `init [path]` | Initialize borg repo and config |
 | `backup <source>` | Create backup and anchor on Bitcoin |
 | `list` | List backups and trail status |
@@ -108,6 +112,13 @@ After initialization, your backup directory contains:
 ├── .blocktrail.json    # Bitcoin trail state
 ├── .git/               # Git repo (holds keys)
 └── repo/               # Borg repository
+```
+
+Projects are also registered globally for the dashboard:
+
+```
+~/.borg-anchor/
+└── projects.json       # List of all borg-anchor projects
 ```
 
 ## Verification
