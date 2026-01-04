@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONFIG_FILE = '.borg-anchor.json';
-const VERSION = '0.0.3';
+const VERSION = '0.0.4';
 
 // ============================================
 // Config Management
@@ -164,11 +164,26 @@ function init(repoPath, options = {}) {
 `);
 }
 
-function backup(sourcePath, options = {}) {
-  const { config, dir } = findConfig();
-  if (!config) {
-    console.error('Error: No config found. Run "borg-anchor init" first.');
-    process.exit(1);
+function backup(sourcePath, destPath, options = {}) {
+  let config, dir;
+
+  if (destPath) {
+    // Destination specified - look for config there
+    dir = resolve(process.cwd(), destPath);
+    config = loadConfig(dir);
+    if (!config) {
+      console.error(`Error: No config found in ${dir}. Run "borg-anchor init ${destPath}" first.`);
+      process.exit(1);
+    }
+  } else {
+    // No destination - look in current directory
+    const found = findConfig();
+    config = found.config;
+    dir = found.dir;
+    if (!config) {
+      console.error('Error: No config found. Run "borg-anchor init" first.');
+      process.exit(1);
+    }
   }
 
   const source = resolve(process.cwd(), sourcePath);
@@ -202,12 +217,29 @@ function backup(sourcePath, options = {}) {
   console.log('  ✓ Backup complete!\n');
 }
 
-function list() {
-  const { config, dir } = findConfig();
-  if (!config) {
-    console.error('Error: No config found. Run "borg-anchor init" first.');
-    process.exit(1);
+function getConfigFromPath(path) {
+  let config, dir;
+  if (path) {
+    dir = resolve(process.cwd(), path);
+    config = loadConfig(dir);
+    if (!config) {
+      console.error(`Error: No config found in ${dir}. Run "borg-anchor init ${path}" first.`);
+      process.exit(1);
+    }
+  } else {
+    const found = findConfig();
+    config = found.config;
+    dir = found.dir;
+    if (!config) {
+      console.error('Error: No config found. Run "borg-anchor init" first.');
+      process.exit(1);
+    }
   }
+  return { config, dir };
+}
+
+function list(path) {
+  const { config, dir } = getConfigFromPath(path);
 
   console.log('\n  Borg Archives');
   console.log('  ' + '─'.repeat(56));
@@ -225,12 +257,8 @@ function list() {
   console.log(getTrailStatus(dir));
 }
 
-function verify(archiveName) {
-  const { config, dir } = findConfig();
-  if (!config) {
-    console.error('Error: No config found. Run "borg-anchor init" first.');
-    process.exit(1);
-  }
+function verify(archiveName, path) {
+  const { config, dir } = getConfigFromPath(path);
 
   const fingerprint = getArchiveFingerprint(config.repo, archiveName);
   if (!fingerprint) {
@@ -273,12 +301,8 @@ function verify(archiveName) {
   }
 }
 
-function restore(archiveName, destPath) {
-  const { config } = findConfig();
-  if (!config) {
-    console.error('Error: No config found. Run "borg-anchor init" first.');
-    process.exit(1);
-  }
+function restore(archiveName, destPath, repoPath) {
+  const { config } = getConfigFromPath(repoPath);
 
   const dest = resolve(process.cwd(), destPath || '.');
   console.log(`\n  Restoring ${archiveName} to ${dest}\n`);
@@ -287,12 +311,8 @@ function restore(archiveName, destPath) {
   console.log('\n  ✓ Restore complete!\n');
 }
 
-function show() {
-  const { config, dir } = findConfig();
-  if (!config) {
-    console.error('Error: No config found. Run "borg-anchor init" first.');
-    process.exit(1);
-  }
+function show(path) {
+  const { config, dir } = getConfigFromPath(path);
 
   console.log('\n  Config');
   console.log('  ' + '─'.repeat(56));
@@ -317,12 +337,12 @@ function printHelp() {
     borg-anchor <command> [options]
 
   Commands:
-    init [path]              Initialize borg repo and config
-    backup <source>          Create backup and anchor on Bitcoin
-    list                     List backups and trail status
-    verify <archive>         Verify backup is anchored
-    restore <archive> [dest] Restore backup to destination
-    show                     Show config and trail status
+    init [path]                          Set up a backup folder
+    backup <source> [dest]               Back up a folder
+    list [path]                          List backups
+    verify <archive> [path]              Verify backup is anchored
+    restore <archive> [dest] [path]      Restore a backup
+    show [path]                          Show config
 
   Init Options:
     --repo <name>            Repo directory name (default: repo)
@@ -401,30 +421,30 @@ function main() {
         break;
       case 'backup':
         if (!_[1]) {
-          console.error('Usage: borg-anchor backup <source> [--name <name>]');
+          console.error('Usage: borg-anchor backup <source> [destination] [--name <name>]');
           process.exit(1);
         }
-        backup(_[1], options);
+        backup(_[1], _[2], options);
         break;
       case 'list':
-        list();
+        list(_[1]);
         break;
       case 'verify':
         if (!_[1]) {
-          console.error('Usage: borg-anchor verify <archive>');
+          console.error('Usage: borg-anchor verify <archive> [backup-folder]');
           process.exit(1);
         }
-        verify(_[1]);
+        verify(_[1], _[2]);
         break;
       case 'restore':
         if (!_[1]) {
-          console.error('Usage: borg-anchor restore <archive> [dest]');
+          console.error('Usage: borg-anchor restore <archive> [dest] [backup-folder]');
           process.exit(1);
         }
-        restore(_[1], _[2]);
+        restore(_[1], _[2], _[3]);
         break;
       case 'show':
-        show();
+        show(_[1]);
         break;
       default:
         console.error(`Unknown command: ${command}`);

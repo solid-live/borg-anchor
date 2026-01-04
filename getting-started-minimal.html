@@ -248,7 +248,7 @@ npm install -g borg-anchor</code></pre>
         <h3><span class="step-num">2</span> Back Up a Folder</h3>
         <pre><code><span class="comment"># Back up the ~/Documents/ folder to ~/backups/</span>
 borg-anchor init ~/backups/
-borg-anchor backup ~/Documents/ --name my-backup --no-anchor</code></pre>
+borg-anchor backup ~/Documents/ ~/backups/ --name my-backup --no-anchor</code></pre>
       </div>
 
       <div class="step-box">
@@ -275,8 +275,8 @@ borg-anchor restore my-first-backup ~/restored</code></pre>
     <section>
       <h2>Common Commands</h2>
       <pre><code><span class="comment"># Create backups</span>
-borg-anchor backup ~/mydata
-borg-anchor backup ~/mydata --name daily-backup
+borg-anchor backup ~/mydata ~/backups/
+borg-anchor backup ~/mydata ~/backups/ --name daily-backup
 
 <span class="comment"># View backups</span>
 borg-anchor list
