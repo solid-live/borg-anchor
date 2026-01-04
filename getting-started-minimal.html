@@ -245,13 +245,10 @@ npm install -g borg-anchor</code></pre>
       </div>
 
       <div class="step-box">
-        <h3><span class="step-num">2</span> Create Your First Backup</h3>
-        <pre><code><span class="comment"># Initialize a backup repository</span>
-borg-anchor init ~/backups
-
-<span class="comment"># Back up a folder (Bitcoin timestamping skipped for now)</span>
-borg-anchor backup ~/Documents --name my-first-backup --no-anchor</code></pre>
-        <p>That's it! Your data is now backed up with deduplication and compression.</p>
+        <h3><span class="step-num">2</span> Back Up a Folder</h3>
+        <pre><code><span class="comment"># Back up the ~/Documents/ folder to ~/backups/</span>
+borg-anchor init ~/backups/
+borg-anchor backup ~/Documents/ --name my-backup --no-anchor</code></pre>
       </div>
 
       <div class="step-box">
