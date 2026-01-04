@@ -7,15 +7,60 @@
 
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { resolve, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
+import { homedir } from 'os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONFIG_FILE = '.borg-anchor.json';
-const VERSION = '0.0.5';
+const GLOBAL_CONFIG_DIR = resolve(homedir(), '.borg-anchor');
+const PROJECTS_FILE = resolve(GLOBAL_CONFIG_DIR, 'projects.json');
+const VERSION = '0.0.6';
 
 // ============================================
-// Config Management
+// Global Project Registry
+// ============================================
+
+function loadProjects() {
+  if (!existsSync(PROJECTS_FILE)) return [];
+  try {
+    const data = JSON.parse(readFileSync(PROJECTS_FILE, 'utf8'));
+    return data.projects || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveProjects(projects) {
+  if (!existsSync(GLOBAL_CONFIG_DIR)) {
+    mkdirSync(GLOBAL_CONFIG_DIR, { recursive: true });
+  }
+  writeFileSync(PROJECTS_FILE, JSON.stringify({ projects }, null, 2) + '\n');
+}
+
+function registerProject(name, path, repo) {
+  const projects = loadProjects();
+
+  // Check if already registered
+  const existing = projects.findIndex(p => p.path === path);
+  if (existing >= 0) {
+    // Update existing
+    projects[existing] = { name, path, repo, updated: new Date().toISOString() };
+  } else {
+    // Add new
+    projects.push({ name, path, repo, added: new Date().toISOString() });
+  }
+
+  saveProjects(projects);
+}
+
+function unregisterProject(path) {
+  const projects = loadProjects().filter(p => p.path !== path);
+  saveProjects(projects);
+}
+
+// ============================================
+// Local Config Management
 // ============================================
 
 function loadConfig(dir = process.cwd()) {
@@ -160,6 +205,11 @@ function init(repoPath, options = {}) {
     execSync('git init', { cwd: dir, stdio: 'pipe' });
     console.log('  ✓ Git initialized');
   }
+
+  // Register in global project list
+  const projectName = options.name || basename(dir);
+  registerProject(projectName, dir, fullRepoPath);
+  console.log(`  ✓ Registered in ~/.borg-anchor/projects.json`);
 
   console.log(`
   Done! Next steps:
@@ -338,6 +388,108 @@ function show(path) {
   console.log(getTrailStatus(dir));
 }
 
+function loadTrail(dir) {
+  const trailPath = resolve(dir, '.blocktrail.json');
+  if (!existsSync(trailPath)) return null;
+  try {
+    return JSON.parse(readFileSync(trailPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function findAnchorState(trail, fingerprint) {
+  if (!trail?.states) return -1;
+  for (let i = 0; i < trail.states.length; i++) {
+    try {
+      const state = JSON.parse(trail.states[i]);
+      if (state.fingerprint === fingerprint) return i;
+    } catch {
+      continue;
+    }
+  }
+  return -1;
+}
+
+function info() {
+  const projects = loadProjects();
+
+  if (projects.length === 0) {
+    console.log('\n  No projects registered.');
+    console.log('  Run "borg-anchor init <path>" to create one.\n');
+    return;
+  }
+
+  console.log('\n  ╭─────────────────────────────────────────────────────────────╮');
+  console.log('  │  borg-anchor                                                │');
+  console.log('  ╰─────────────────────────────────────────────────────────────╯\n');
+
+  let totalArchives = 0;
+  let totalAnchored = 0;
+
+  for (const project of projects) {
+    const config = loadConfig(project.path);
+    if (!config) {
+      console.log(`  ${project.name.toUpperCase()} (${project.path})`);
+      console.log('  ⚠ Config not found\n');
+      continue;
+    }
+
+    const trail = loadTrail(project.path);
+    let archives = [];
+
+    try {
+      archives = listArchives(config.repo);
+    } catch (err) {
+      console.log(`  ${project.name.toUpperCase()} (${project.path})`);
+      console.log(`  ⚠ Cannot access repo: ${config.repo}\n`);
+      continue;
+    }
+
+    console.log(`  ${project.name.toUpperCase()} (${project.path})`);
+    console.log('  ' + '─'.repeat(60));
+
+    if (archives.length === 0) {
+      console.log('  No archives yet.\n');
+      continue;
+    }
+
+    // Display header
+    console.log('  Archive                    Fingerprint      Source              Anchored');
+    console.log('  ' + '─'.repeat(60));
+
+    for (const { archive, time } of archives) {
+      let fingerprint, source, stateIndex;
+
+      try {
+        fingerprint = getArchiveFingerprint(config.repo, archive);
+        source = getArchiveSource(config.repo, archive) || '';
+      } catch {
+        fingerprint = '?';
+        source = '?';
+      }
+
+      stateIndex = findAnchorState(trail, fingerprint);
+      const anchored = stateIndex >= 0 ? `✓ #${stateIndex}` : '  -';
+
+      // Truncate for display
+      const archiveDisplay = archive.slice(0, 24).padEnd(24);
+      const fpDisplay = fingerprint ? fingerprint.slice(0, 12) + '...' : '?';
+      const sourceDisplay = source.slice(-18).padEnd(18);
+
+      console.log(`  ${archiveDisplay} ${fpDisplay}   ${sourceDisplay} ${anchored}`);
+
+      totalArchives++;
+      if (stateIndex >= 0) totalAnchored++;
+    }
+
+    console.log('');
+  }
+
+  console.log('  ' + '─'.repeat(60));
+  console.log(`  ${projects.length} project(s) · ${totalArchives} archive(s) · ${totalAnchored} anchored\n`);
+}
+
 // ============================================
 // CLI Parser
 // ============================================
@@ -351,12 +503,13 @@ function printHelp() {
     borg-anchor <command> [options]
 
   Commands:
+    info                                 Dashboard of all projects
     init [path]                          Set up a backup folder
     backup <source> [dest]               Back up a folder
     list [path]                          List backups
     verify <archive> [path]              Verify backup is anchored
     restore <archive> [dest] [path]      Restore a backup
-    show [path]                          Show config
+    show [path]                          Show project config
 
   Init Options:
     --repo <name>            Repo directory name (default: repo)
@@ -430,6 +583,9 @@ function main() {
 
   try {
     switch (command) {
+      case 'info':
+        info();
+        break;
       case 'init':
         init(_[1], options);
         break;
