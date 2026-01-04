@@ -63,7 +63,8 @@ borg-anchor restore first-backup /tmp/restore
 
 | Command | Description |
 |---------|-------------|
-| `info` | Dashboard of all projects and backups |
+| `info` | Dashboard of all projects (CLI) |
+| `dashboard` | Web dashboard (localhost:3077) |
 | `init [path]` | Initialize borg repo and config |
 | `backup <source>` | Create backup and anchor on Bitcoin |
 | `list` | List backups and trail status |
