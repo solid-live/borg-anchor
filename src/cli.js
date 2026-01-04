@@ -6,7 +6,7 @@
  */
 
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -125,6 +125,11 @@ function init(repoPath, options = {}) {
   const network = options.network || 'tbtc4';
 
   console.log(`\n  Initializing borg-anchor in ${dir}\n`);
+
+  // Create parent directory if needed
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
 
   // Create borg repo
   if (!existsSync(fullRepoPath)) {
