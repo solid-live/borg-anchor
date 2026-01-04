@@ -39,6 +39,7 @@ describe('borg-anchor CLI', () => {
       assert.ok(output.includes('borg-anchor'));
       assert.ok(output.includes('Commands:'));
       assert.ok(output.includes('info'));
+      assert.ok(output.includes('dashboard'));
     });
 
     test('--version shows version', () => {

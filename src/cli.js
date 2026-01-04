@@ -10,12 +10,13 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
+import { createServer } from 'http';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONFIG_FILE = '.borg-anchor.json';
 const GLOBAL_CONFIG_DIR = resolve(homedir(), '.borg-anchor');
 const PROJECTS_FILE = resolve(GLOBAL_CONFIG_DIR, 'projects.json');
-const VERSION = '0.0.6';
+const VERSION = '0.0.7';
 
 // ============================================
 // Global Project Registry
@@ -490,6 +491,294 @@ function info() {
   console.log(`  ${projects.length} project(s) · ${totalArchives} archive(s) · ${totalAnchored} anchored\n`);
 }
 
+function gatherDashboardData() {
+  const projects = loadProjects();
+  const data = { projects: [], totals: { archives: 0, anchored: 0 } };
+
+  for (const project of projects) {
+    const projectData = {
+      name: project.name,
+      path: project.path,
+      repo: project.repo,
+      archives: [],
+      error: null
+    };
+
+    const config = loadConfig(project.path);
+    if (!config) {
+      projectData.error = 'Config not found';
+      data.projects.push(projectData);
+      continue;
+    }
+
+    const trail = loadTrail(project.path);
+
+    try {
+      const archives = listArchives(config.repo);
+      for (const { archive, time } of archives) {
+        let fingerprint, source, stateIndex;
+        try {
+          fingerprint = getArchiveFingerprint(config.repo, archive);
+          source = getArchiveSource(config.repo, archive) || '';
+        } catch {
+          fingerprint = null;
+          source = '';
+        }
+        stateIndex = findAnchorState(trail, fingerprint);
+
+        projectData.archives.push({
+          name: archive,
+          time,
+          fingerprint,
+          source,
+          anchored: stateIndex >= 0,
+          stateIndex
+        });
+
+        data.totals.archives++;
+        if (stateIndex >= 0) data.totals.anchored++;
+      }
+    } catch (err) {
+      projectData.error = `Cannot access repo: ${config.repo}`;
+    }
+
+    data.projects.push(projectData);
+  }
+
+  return data;
+}
+
+function getDashboardHtml() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>borg-anchor dashboard</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --success: #3fb950;
+      --warning: #d29922;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { font-size: 1.5rem; font-weight: 600; }
+    .stats {
+      display: flex;
+      gap: 2rem;
+      color: var(--muted);
+    }
+    .stats span { color: var(--text); font-weight: 600; }
+    .project {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .project-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .project-name { font-weight: 600; font-size: 1.1rem; }
+    .project-path { color: var(--muted); font-size: 0.85rem; }
+    .project-error {
+      padding: 1rem 1.5rem;
+      color: var(--warning);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.75rem 1.5rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    .fingerprint {
+      font-family: monospace;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .anchored {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .not-anchored {
+      color: var(--muted);
+    }
+    .refresh-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .refresh-btn:hover { opacity: 0.9; }
+    .empty {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+    }
+    .time { color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>borg-anchor</h1>
+      </div>
+      <div class="stats">
+        <div><span id="project-count">-</span> projects</div>
+        <div><span id="archive-count">-</span> archives</div>
+        <div><span id="anchored-count">-</span> anchored</div>
+        <button class="refresh-btn" onclick="refresh()">Refresh</button>
+      </div>
+    </header>
+    <main id="projects"></main>
+  </div>
+  <script>
+    async function refresh() {
+      const res = await fetch('/api/data');
+      const data = await res.json();
+
+      document.getElementById('project-count').textContent = data.projects.length;
+      document.getElementById('archive-count').textContent = data.totals.archives;
+      document.getElementById('anchored-count').textContent = data.totals.anchored;
+
+      const main = document.getElementById('projects');
+
+      if (data.projects.length === 0) {
+        main.innerHTML = '<div class="empty">No projects registered. Run <code>borg-anchor init</code> to create one.</div>';
+        return;
+      }
+
+      main.innerHTML = data.projects.map(p => {
+        if (p.error) {
+          return \`<div class="project">
+            <div class="project-header">
+              <div>
+                <div class="project-name">\${p.name}</div>
+                <div class="project-path">\${p.path}</div>
+              </div>
+            </div>
+            <div class="project-error">⚠ \${p.error}</div>
+          </div>\`;
+        }
+
+        if (p.archives.length === 0) {
+          return \`<div class="project">
+            <div class="project-header">
+              <div>
+                <div class="project-name">\${p.name}</div>
+                <div class="project-path">\${p.path}</div>
+              </div>
+            </div>
+            <div class="empty">No archives yet</div>
+          </div>\`;
+        }
+
+        return \`<div class="project">
+          <div class="project-header">
+            <div>
+              <div class="project-name">\${p.name}</div>
+              <div class="project-path">\${p.path}</div>
+            </div>
+            <div class="project-path">\${p.archives.length} archive(s)</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Archive</th>
+                <th>Time</th>
+                <th>Fingerprint</th>
+                <th>Source</th>
+                <th>Anchored</th>
+              </tr>
+            </thead>
+            <tbody>
+              \${p.archives.map(a => \`<tr>
+                <td>\${a.name}</td>
+                <td class="time">\${a.time}</td>
+                <td class="fingerprint">\${a.fingerprint ? a.fingerprint.slice(0, 16) + '...' : '-'}</td>
+                <td class="fingerprint">\${a.source.split('/').slice(-2).join('/')}</td>
+                <td class="\${a.anchored ? 'anchored' : 'not-anchored'}">\${a.anchored ? '✓ #' + a.stateIndex : '-'}</td>
+              </tr>\`).join('')}
+            </tbody>
+          </table>
+        </div>\`;
+      }).join('');
+    }
+
+    refresh();
+  </script>
+</body>
+</html>`;
+}
+
+function dashboard(options = {}) {
+  const port = options.port || 3077;
+
+  const server = createServer((req, res) => {
+    if (req.url === '/api/data') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(gatherDashboardData()));
+    } else {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(getDashboardHtml());
+    }
+  });
+
+  server.listen(port, () => {
+    console.log(`\n  borg-anchor dashboard running at http://localhost:${port}\n`);
+    console.log('  Press Ctrl+C to stop\n');
+
+    // Try to open in browser
+    try {
+      const openCmd = process.platform === 'darwin' ? 'open' :
+                      process.platform === 'win32' ? 'start' : 'xdg-open';
+      execSync(`${openCmd} http://localhost:${port}`, { stdio: 'ignore' });
+    } catch {
+      // Browser open failed, that's ok
+    }
+  });
+}
+
 // ============================================
 // CLI Parser
 // ============================================
@@ -503,7 +792,8 @@ function printHelp() {
     borg-anchor <command> [options]
 
   Commands:
-    info                                 Dashboard of all projects
+    info                                 Dashboard of all projects (CLI)
+    dashboard                            Web dashboard (localhost:3077)
     init [path]                          Set up a backup folder
     backup <source> [dest]               Back up a folder
     list [path]                          List backups
@@ -585,6 +875,9 @@ function main() {
     switch (command) {
       case 'info':
         info();
+        break;
+      case 'dashboard':
+        dashboard(options);
         break;
       case 'init':
         init(_[1], options);
