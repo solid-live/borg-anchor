@@ -297,8 +297,9 @@
         <li><a href="#what-is-borg">What is Borg? (30-second explainer)</a></li>
         <li><a href="#prerequisites">Install Prerequisites</a></li>
         <li><a href="#quick-win-1">Quick Win #1: Your First Backup</a></li>
-        <li><a href="#quick-win-2">Quick Win #2: Bitcoin Timestamping</a></li>
-        <li><a href="#quick-win-3">Quick Win #3: Restore Your Data</a></li>
+        <li><a href="#quick-win-2">Quick Win #2: Fund Your Testnet Wallet</a></li>
+        <li><a href="#quick-win-3">Quick Win #3: Bitcoin Timestamping</a></li>
+        <li><a href="#quick-win-4">Quick Win #4: Restore Your Data</a></li>
         <li><a href="#concepts">Key Concepts</a></li>
         <li><a href="#next-steps">Next Steps</a></li>
       </ol>
@@ -438,22 +439,68 @@ borg-anchor backup ~/test-data --name first-backup --no-anchor</code></pre>
     <!-- Quick Win 2 -->
     <section id="quick-win-2">
       <div class="quick-win">
-        <h3>Quick Win #2: Bitcoin Timestamping <span class="badge">5 min</span></h3>
-        <p class="lead">Now let's anchor a backup on Bitcoin testnet (free).</p>
+        <h3>Quick Win #2: Fund Your Testnet Wallet <span class="badge">5 min</span></h3>
+        <p class="lead">Before you can anchor on Bitcoin, you need a keypair and some testnet coins.</p>
 
         <div class="callout callout-info">
           <p><strong>What's testnet?</strong></p>
           <p>Bitcoin testnet is a separate blockchain for testing. The coins have no value, so you can experiment freely. borg-anchor uses testnet4 (<code>tbtc4</code>) by default.</p>
         </div>
 
-        <h4>Set up your Bitcoin key</h4>
-        <pre><code><span class="comment"># You'll need a hex private key. Generate one or use a test key.</span>
-<span class="comment"># This is stored locally in git config.</span>
+        <h4>Generate a keypair</h4>
+        <p>You need a hex private key to sign Bitcoin transactions. Use our helper script or generate one manually:</p>
+
+        <pre><code><span class="comment"># Option 1: Use the helper script (recommended)</span>
+<span class="comment"># Download and run from the borg-anchor repo</span>
+curl -sL https://raw.githubusercontent.com/solid-live/borg-anchor/gh-pages/scripts/keygen.sh | bash
+
+<span class="comment"># Option 2: Generate manually with openssl</span>
+openssl rand -hex 32</code></pre>
+        <p>This outputs a 64-character hex string like:</p>
+        <pre><code>a1b2c3d4e5f6789...your64characterhexkey...9876543210ab</code></pre>
+
+        <div class="callout callout-warning">
+          <p><strong>Save your private key!</strong></p>
+          <p>Copy this key somewhere safe. If you lose it, you lose access to your testnet funds and UTXO chain.</p>
+        </div>
+
+        <h4>Configure borg-anchor with your key</h4>
+        <pre><code><span class="comment"># Navigate to your backup repository</span>
 cd ~/my-backups
-git config nostr.privkey YOUR_HEX_PRIVATE_KEY</code></pre>
-        <p style="font-size: 0.9rem; color: var(--muted);">
-          You can generate a key with any Bitcoin key generator or use the blocktrails tools.
-        </p>
+
+<span class="comment"># Store the private key in git config (local to this repo)</span>
+git config nostr.privkey YOUR_64_CHAR_HEX_KEY</code></pre>
+
+        <h4>Get your testnet address</h4>
+        <p>Use blocktrails to derive your address from the private key:</p>
+        <pre><code><span class="comment"># Show your wallet info including address</span>
+blocktrails show</code></pre>
+        <p>Copy the testnet4 address that's displayed (starts with <code>tb1...</code> or similar).</p>
+
+        <h4>Get free testnet coins from a faucet</h4>
+        <p>Visit one of these testnet4 faucets and paste your address:</p>
+        <ul>
+          <li><a href="https://github.com/testnet4/awesome-testnet4?tab=readme-ov-file#faucets" target="_blank">Testnet4 Faucet List</a> - curated list of working faucets</li>
+        </ul>
+        <p>Request a small amount (0.001 tBTC is plenty for many anchors).</p>
+
+        <h4>Verify your balance</h4>
+        <pre><code><span class="comment"># Check that the coins arrived</span>
+blocktrails show</code></pre>
+        <p>Wait a few minutes for the transaction to confirm. You should see a balance.</p>
+
+        <div class="callout callout-success">
+          <p><strong>Wallet funded!</strong></p>
+          <p>You now have testnet coins ready to anchor backups. Each anchor uses a small amount, so this will last for many backups.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Win 3 -->
+    <section id="quick-win-3">
+      <div class="quick-win">
+        <h3>Quick Win #3: Bitcoin Timestamping <span class="badge">5 min</span></h3>
+        <p class="lead">Now let's anchor a backup on Bitcoin testnet.</p>
 
         <h4>Create a Bitcoin-timestamped backup</h4>
         <pre><code><span class="comment"># Add some new content</span>
@@ -482,10 +529,10 @@ borg-anchor backup ~/test-data --name anchored-backup</code></pre>
       </div>
     </section>
 
-    <!-- Quick Win 3 -->
-    <section id="quick-win-3">
+    <!-- Quick Win 4 -->
+    <section id="quick-win-4">
       <div class="quick-win">
-        <h3>Quick Win #3: Restore Your Data <span class="badge">2 min</span></h3>
+        <h3>Quick Win #4: Restore Your Data <span class="badge">2 min</span></h3>
         <p class="lead">The whole point of backups - getting your data back.</p>
 
         <h4>Restore to a new location</h4>
