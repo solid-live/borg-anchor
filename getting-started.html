@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - borg-anchor</title>
+  <meta name="description" content="Learn how to use borg-anchor for Bitcoin-timestamped backups - beginner's guide">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #2d3748;
+      --muted: #718096;
+      --accent: #3182ce;
+      --accent-light: #ebf4ff;
+      --border: #e2e8f0;
+      --code-bg: #1a202c;
+      --code-text: #e2e8f0;
+      --success: #48bb78;
+      --warning: #ed8936;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    nav a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    nav .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 0 3rem;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+
+    .toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .toc h2 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .toc ol {
+      margin-left: 1.5rem;
+    }
+    .toc li {
+      margin-bottom: 0.5rem;
+    }
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    section {
+      margin: 3rem 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-size: 1.2rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--text);
+    }
+    p {
+      margin-bottom: 1rem;
+      color: var(--muted);
+    }
+    p.lead {
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.5rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+    code {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: var(--accent-light);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    .comment { color: #68d391; }
+    .prompt { color: #68d391; }
+
+    .callout {
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      border-left: 4px solid;
+    }
+    .callout-info {
+      background: var(--accent-light);
+      border-color: var(--accent);
+    }
+    .callout-success {
+      background: #f0fff4;
+      border-color: var(--success);
+    }
+    .callout-warning {
+      background: #fffaf0;
+      border-color: var(--warning);
+    }
+    .callout p {
+      margin: 0;
+      color: var(--text);
+    }
+    .callout strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .step {
+      display: flex;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .step-content {
+      flex: 1;
+    }
+    .step-content h4 {
+      margin-bottom: 0.5rem;
+    }
+
+    .quick-win {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .quick-win h3 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .quick-win .badge {
+      background: var(--success);
+      color: white;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .concepts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .concept {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .concept h4 {
+      margin-bottom: 0.5rem;
+    }
+    .concept p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    ul, ol {
+      margin: 1rem 0 1rem 1.5rem;
+      color: var(--muted);
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    .next-steps {
+      background: linear-gradient(135deg, var(--accent-light), #f0fff4);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-top: 3rem;
+      text-align: center;
+    }
+    .next-steps h2 {
+      border: none;
+      padding: 0;
+    }
+    .next-steps .links {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .next-steps a {
+      color: var(--accent);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .next-steps a:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html" class="brand">borg-anchor</a>
+      <a href="https://github.com/solid-live/borg-anchor">GitHub</a>
+    </nav>
+
+    <header>
+      <h1>Getting Started</h1>
+      <p class="subtitle">From zero to Bitcoin-timestamped backups in 10 minutes</p>
+    </header>
+
+    <div class="toc">
+      <h2>On This Page</h2>
+      <ol>
+        <li><a href="#what-is-borg">What is Borg? (30-second explainer)</a></li>
+        <li><a href="#prerequisites">Install Prerequisites</a></li>
+        <li><a href="#quick-win-1">Quick Win #1: Your First Backup</a></li>
+        <li><a href="#quick-win-2">Quick Win #2: Bitcoin Timestamping</a></li>
+        <li><a href="#quick-win-3">Quick Win #3: Restore Your Data</a></li>
+        <li><a href="#concepts">Key Concepts</a></li>
+        <li><a href="#next-steps">Next Steps</a></li>
+      </ol>
+    </div>
+
+    <!-- What is Borg -->
+    <section id="what-is-borg">
+      <h2>What is Borg?</h2>
+      <p class="lead">
+        <strong>BorgBackup</strong> (or just "Borg") is a backup program that's smart about storage.
+        Instead of copying everything every time, it only stores what's changed.
+      </p>
+
+      <div class="concepts">
+        <div class="concept">
+          <h4>Deduplication</h4>
+          <p>Have 10 copies of the same photo? Borg stores it once. Back up daily? Only changes are stored.</p>
+        </div>
+        <div class="concept">
+          <h4>Compression</h4>
+          <p>Your data is compressed automatically. A 100GB backup might only take 30GB of space.</p>
+        </div>
+        <div class="concept">
+          <h4>Encryption</h4>
+          <p>Optional AES-256 encryption. Even if someone gets your backup, they can't read it.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <p><strong>What does borg-anchor add?</strong></p>
+        <p>borg-anchor wraps Borg and adds <strong>Bitcoin timestamping</strong>. After each backup, the fingerprint (hash) of your data is recorded on the Bitcoin blockchain. This creates mathematical proof that your backup existed at a specific point in time.</p>
+      </div>
+    </section>
+
+    <!-- Prerequisites -->
+    <section id="prerequisites">
+      <h2>Install Prerequisites</h2>
+      <p>You'll need three things installed. This takes about 5 minutes.</p>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Install BorgBackup</h4>
+          <p>The backup engine that does the heavy lifting.</p>
+          <pre><code><span class="comment"># Ubuntu/Debian</span>
+sudo apt install borgbackup
+
+<span class="comment"># macOS</span>
+brew install borgbackup
+
+<span class="comment"># Verify installation</span>
+borg --version</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Install Node.js 18+</h4>
+          <p>Required to run borg-anchor.</p>
+          <pre><code><span class="comment"># Check if you have it</span>
+node --version
+
+<span class="comment"># If not, install via your package manager or:</span>
+<span class="comment"># https://nodejs.org/</span></code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Install borg-anchor</h4>
+          <pre><code>npm install -g borg-anchor
+
+<span class="comment"># Verify installation</span>
+borg-anchor --version</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Install blocktrails (for Bitcoin anchoring)</h4>
+          <p>This handles the Bitcoin transaction side.</p>
+          <pre><code>git clone https://github.com/blocktrails/blocktrails.git
+cd blocktrails
+npm install</code></pre>
+          <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+            See <a href="https://github.com/blocktrails/blocktrails">blocktrails repo</a> for full setup.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Win 1 -->
+    <section id="quick-win-1">
+      <div class="quick-win">
+        <h3>Quick Win #1: Your First Backup <span class="badge">5 min</span></h3>
+        <p class="lead">Let's create a backup repository and back up some files.</p>
+
+        <h4>Create a test folder with some files</h4>
+        <pre><code><span class="comment"># Create sample data to back up</span>
+mkdir -p ~/test-data
+echo "Hello, World!" > ~/test-data/greeting.txt
+echo "Important notes" > ~/test-data/notes.txt
+cp ~/.bashrc ~/test-data/  <span class="comment"># copy a real file</span></code></pre>
+
+        <h4>Initialize a backup repository</h4>
+        <pre><code><span class="comment"># Create and initialize the backup location</span>
+borg-anchor init ~/my-backups</code></pre>
+        <p>This creates a new directory with a Borg repository inside. You'll see output like:</p>
+        <pre><code>  Initializing borg-anchor in /home/you/my-backups
+
+  Creating borg repo: /home/you/my-backups/repo
+  ✓ Borg repository created
+  ✓ Config saved: .borg-anchor.json
+  ✓ Git initialized</code></pre>
+
+        <h4>Create your first backup</h4>
+        <pre><code><span class="comment"># Navigate to your backup repository</span>
+cd ~/my-backups
+
+<span class="comment"># Back up your test data (skip Bitcoin for now)</span>
+borg-anchor backup ~/test-data --name first-backup --no-anchor</code></pre>
+
+        <div class="callout callout-success">
+          <p><strong>You did it!</strong></p>
+          <p>Your data is now safely backed up with Borg. The <code>--no-anchor</code> flag skipped Bitcoin timestamping for this test run.</p>
+        </div>
+
+        <h4>See what you've backed up</h4>
+        <pre><code>borg-anchor list</code></pre>
+        <p>You'll see your backup with its unique fingerprint (SHA-256 hash).</p>
+      </div>
+    </section>
+
+    <!-- Quick Win 2 -->
+    <section id="quick-win-2">
+      <div class="quick-win">
+        <h3>Quick Win #2: Bitcoin Timestamping <span class="badge">5 min</span></h3>
+        <p class="lead">Now let's anchor a backup on Bitcoin testnet (free).</p>
+
+        <div class="callout callout-info">
+          <p><strong>What's testnet?</strong></p>
+          <p>Bitcoin testnet is a separate blockchain for testing. The coins have no value, so you can experiment freely. borg-anchor uses testnet4 (<code>tbtc4</code>) by default.</p>
+        </div>
+
+        <h4>Set up your Bitcoin key</h4>
+        <pre><code><span class="comment"># You'll need a hex private key. Generate one or use a test key.</span>
+<span class="comment"># This is stored locally in git config.</span>
+cd ~/my-backups
+git config nostr.privkey YOUR_HEX_PRIVATE_KEY</code></pre>
+        <p style="font-size: 0.9rem; color: var(--muted);">
+          You can generate a key with any Bitcoin key generator or use the blocktrails tools.
+        </p>
+
+        <h4>Create a Bitcoin-timestamped backup</h4>
+        <pre><code><span class="comment"># Add some new content</span>
+echo "Updated: $(date)" >> ~/test-data/notes.txt
+
+<span class="comment"># Back up WITH Bitcoin anchoring</span>
+borg-anchor backup ~/test-data --name anchored-backup</code></pre>
+
+        <p>The output will show the fingerprint being anchored:</p>
+        <pre><code>  Creating backup: anchored-backup
+  Source: /home/you/test-data
+  Repo: /home/you/my-backups/repo
+
+  Fingerprint: 7a3b9c...
+
+  Anchoring on Bitcoin...
+  ✓ Backup complete!</code></pre>
+
+        <h4>Verify it's anchored</h4>
+        <pre><code>borg-anchor verify anchored-backup</code></pre>
+
+        <div class="callout callout-success">
+          <p><strong>Your backup is now on Bitcoin!</strong></p>
+          <p>The fingerprint of your data has been recorded in a Bitcoin transaction. Anyone can verify that this exact data existed at the time of the block.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Win 3 -->
+    <section id="quick-win-3">
+      <div class="quick-win">
+        <h3>Quick Win #3: Restore Your Data <span class="badge">2 min</span></h3>
+        <p class="lead">The whole point of backups - getting your data back.</p>
+
+        <h4>Restore to a new location</h4>
+        <pre><code><span class="comment"># Create a restore destination</span>
+mkdir ~/restored-data
+
+<span class="comment"># Restore your backup</span>
+borg-anchor restore first-backup ~/restored-data</code></pre>
+
+        <h4>Check the restored files</h4>
+        <pre><code>ls ~/restored-data/
+cat ~/restored-data/home/you/test-data/greeting.txt</code></pre>
+
+        <div class="callout callout-success">
+          <p><strong>Data restored!</strong></p>
+          <p>Borg preserves the full path structure. Your files are exactly as they were when backed up.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Concepts -->
+    <section id="concepts">
+      <h2>Key Concepts</h2>
+
+      <h3>Repository vs Archive</h3>
+      <p>
+        A <strong>repository</strong> is where all your backups are stored (like <code>~/my-backups/repo</code>).
+        An <strong>archive</strong> is a single backup within that repository (like <code>first-backup</code>).
+      </p>
+      <pre><code>Repository: ~/my-backups/repo/
+├── Archive: first-backup     (Jan 1)
+├── Archive: second-backup    (Jan 2)
+└── Archive: weekly-backup    (Jan 7)</code></pre>
+
+      <h3>Fingerprints</h3>
+      <p>
+        Every archive has a unique <strong>fingerprint</strong> - a SHA-256 hash of its contents.
+        If even one byte changes, the fingerprint is completely different.
+        This fingerprint is what gets anchored on Bitcoin.
+      </p>
+
+      <h3>The Anchor Chain</h3>
+      <p>
+        borg-anchor uses a chained UTXO trail, meaning each backup links to the previous one.
+        This creates an unbroken chain of proofs you can reconstruct at any time.
+      </p>
+
+      <h3>Networks</h3>
+      <ul>
+        <li><strong>tbtc4</strong> (testnet4) - Default. Free to use. Great for testing and non-critical backups.</li>
+        <li><strong>btc</strong> (mainnet) - Real Bitcoin. Use for important data that needs permanent, trusted timestamps.</li>
+      </ul>
+      <pre><code><span class="comment"># Use mainnet for production</span>
+borg-anchor init ~/important-backups --network btc</code></pre>
+    </section>
+
+    <!-- Common Commands -->
+    <section>
+      <h2>Command Reference</h2>
+      <pre><code><span class="comment"># Initialize a new backup repository</span>
+borg-anchor init ~/backups
+borg-anchor init ~/backups --encryption repokey  <span class="comment"># with encryption</span>
+borg-anchor init ~/backups --network btc         <span class="comment"># use mainnet</span>
+
+<span class="comment"># Create backups</span>
+borg-anchor backup ~/mydata                      <span class="comment"># auto-named backup-YYYY-MM-DD</span>
+borg-anchor backup ~/mydata --name daily         <span class="comment"># custom name</span>
+borg-anchor backup ~/mydata --no-anchor          <span class="comment"># skip Bitcoin</span>
+borg-anchor backup ~/mydata --dry                <span class="comment"># dry run</span>
+
+<span class="comment"># View backups</span>
+borg-anchor list                                 <span class="comment"># list all archives</span>
+borg-anchor show                                 <span class="comment"># show config & trail status</span>
+
+<span class="comment"># Verify & restore</span>
+borg-anchor verify my-backup                     <span class="comment"># check if anchored</span>
+borg-anchor restore my-backup ~/destination      <span class="comment"># restore files</span></code></pre>
+    </section>
+
+    <!-- Next Steps -->
+    <section id="next-steps" class="next-steps">
+      <h2>Next Steps</h2>
+      <p>You now know the basics. Here's where to go next:</p>
+      <div class="links">
+        <a href="index.html">Full Documentation</a>
+        <a href="https://borgbackup.readthedocs.io/">BorgBackup Docs</a>
+        <a href="https://github.com/blocktrails/blocktrails">blocktrails</a>
+        <a href="https://github.com/solid-live/borg-anchor">GitHub</a>
+      </div>
+    </section>
+
+    <!-- Troubleshooting -->
+    <section>
+      <h2>Troubleshooting</h2>
+
+      <h3>borg: command not found</h3>
+      <p>BorgBackup isn't installed or not in your PATH. Install it with your package manager.</p>
+
+      <h3>blocktrails CLI not found</h3>
+      <p>You need to install blocktrails. See <a href="https://github.com/blocktrails/blocktrails">the repo</a> for instructions.</p>
+
+      <h3>No config found</h3>
+      <p>You're not in a borg-anchor directory. Either <code>cd</code> into your backup folder or run <code>borg-anchor init</code> first.</p>
+
+      <h3>Backup not anchored</h3>
+      <p>Make sure you've set up your private key with <code>git config nostr.privkey</code> and have testnet coins if needed.</p>
+    </section>
+
+    <footer>
+      <p>AGPL-3.0 &copy; 2026 <a href="https://melvincarvalho.com">Melvin Carvalho</a></p>
+      <p style="margin-top: 0.5rem;">Part of the <a href="https://solid.live">solid.live</a> ecosystem</p>
+    </footer>
+  </div>
+</body>
+</html>
