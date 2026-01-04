@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONFIG_FILE = '.borg-anchor.json';
-const VERSION = '0.0.4';
+const VERSION = '0.0.5';
 
 // ============================================
 // Config Management
