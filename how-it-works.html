@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How It Works - borg-anchor</title>
+  <meta name="description" content="Understanding what happens when you back up with borg-anchor">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #2d3748;
+      --muted: #718096;
+      --accent: #3182ce;
+      --accent-light: #ebf4ff;
+      --border: #e2e8f0;
+      --code-bg: #1a202c;
+      --code-text: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav .brand { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--muted); margin-bottom: 2rem; }
+
+    h2 { font-size: 1.4rem; margin: 2.5rem 0 1rem; }
+    p { margin-bottom: 1rem; color: var(--muted); }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+    code {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: var(--accent-light);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    pre code { background: none; padding: 0; }
+
+    .qa {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .qa h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+    .qa p { margin-bottom: 0.5rem; }
+    .qa p:last-child { margin-bottom: 0; }
+
+    footer {
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html" class="brand">borg-anchor</a>
+      <a href="getting-started-minimal.html">Quick Start</a>
+    </nav>
+
+    <h1>How It Works</h1>
+    <p class="subtitle">What actually happens when you back up</p>
+
+    <h2>The Folder Structure</h2>
+    <p>When you run <code>borg-anchor init ~/backups/</code>, it creates:</p>
+    <pre>~/backups/
+├── .borg-anchor.json   ← config for borg-anchor
+├── .git/               ← stores your Bitcoin key
+└── storage/            ← where Borg keeps everything
+    ├── data/           ← your files (chunked, compressed)
+    ├── index.1         ← lookup table to find chunks
+    └── config          ← Borg settings</pre>
+
+    <div class="qa">
+      <h3>Where are my files?</h3>
+      <p>Not stored as regular files. Borg splits them into chunks, compresses them, and stores them in <code>data/</code>. That's why you need <code>borg-anchor restore</code> to get them back.</p>
+    </div>
+
+    <div class="qa">
+      <h3>What's a chunk?</h3>
+      <p>Borg splits files into pieces (chunks). If the same chunk appears in multiple files or backups, it's only stored once. That's deduplication.</p>
+    </div>
+
+    <h2>Backups and Archives</h2>
+    <p>Each time you run <code>borg-anchor backup</code>, it creates an <strong>archive</strong> - a snapshot of your folder at that moment.</p>
+    <pre>~/backups/storage/
+└── contains:
+    ├── archive: "my-backup"        (Jan 4, 10:00)
+    ├── archive: "my-backup-2"      (Jan 5, 10:00)
+    └── archive: "weekly"           (Jan 7, 10:00)</pre>
+    <p>All archives share the same chunks. If a file didn't change between backups, it's not stored again.</p>
+
+    <div class="qa">
+      <h3>How does it know where files came from?</h3>
+      <p>Each archive stores metadata: the original path, permissions, and which chunks make up each file.</p>
+      <pre>Archive "my-backup":
+├── /home/you/Documents/notes.txt → chunks [A, B]
+├── /home/you/Documents/photo.jpg → chunks [C, D, E]
+└── /home/you/Documents/report.pdf → chunks [F, G]</pre>
+      <p>When you restore, Borg recreates the original folder structure.</p>
+    </div>
+
+    <div class="qa">
+      <h3>Can I back up multiple folders?</h3>
+      <p>Yes. Each backup creates a separate archive:</p>
+      <pre>borg-anchor backup ~/Documents/ --name docs
+borg-anchor backup ~/Photos/ --name photos</pre>
+      <p>Both are stored in the same place, deduplicated together.</p>
+    </div>
+
+    <h2>The Index and Config</h2>
+
+    <div class="qa">
+      <h3>What's index.1?</h3>
+      <p>A lookup table so Borg can find chunks quickly:</p>
+      <pre>chunk ID → location in data/</pre>
+      <p>Without it, Borg would have to scan everything to find a file.</p>
+    </div>
+
+    <div class="qa">
+      <h3>What's config?</h3>
+      <p>Repository settings: encryption mode, version, unique ID. Just bookkeeping.</p>
+    </div>
+
+    <h2>The .git Folder</h2>
+    <p>This is <strong>not</strong> from Borg. borg-anchor creates it to store your Bitcoin private key:</p>
+    <pre>git config nostr.privkey YOUR_KEY</pre>
+    <p>Git config is just a convenient place to store it locally per-backup-folder.</p>
+
+    <h2>Bitcoin Anchoring</h2>
+    <p>After each backup, Borg generates a <strong>fingerprint</strong> - a SHA-256 hash of the archive. If even one byte changes, the fingerprint is completely different.</p>
+    <p>borg-anchor takes that fingerprint and records it in a Bitcoin transaction. This creates proof that your backup existed at a specific point in time.</p>
+    <pre>Your files → Borg archive → Fingerprint → Bitcoin transaction</pre>
+    <p>Anyone can verify: look up the transaction, check the fingerprint matches your backup.</p>
+
+    <footer>
+      <p><a href="getting-started-minimal.html">← Back to Quick Start</a></p>
+      <p style="margin-top: 1rem;">AGPL-3.0 · <a href="https://solid.live">solid.live</a></p>
+    </footer>
+  </div>
+</body>
+</html>
