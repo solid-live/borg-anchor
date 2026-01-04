@@ -1,0 +1,42 @@
+{
+  "name": "@solid-live/borg-anchor",
+  "version": "0.0.1",
+  "description": "Borg backups with Bitcoin timestamping - your data lives on forever",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "borg-anchor": "src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "test": "node --test src/*.test.js"
+  },
+  "keywords": [
+    "borg",
+    "backup",
+    "bitcoin",
+    "timestamp",
+    "anchor",
+    "solid",
+    "decentralized",
+    "proof-of-existence",
+    "deduplication"
+  ],
+  "author": "Melvin Carvalho <melvincarvalho@gmail.com>",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solid-live/borg-anchor.git"
+  },
+  "homepage": "https://solid-live.github.io/borg-anchor/",
+  "bugs": {
+    "url": "https://github.com/solid-live/borg-anchor/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "src/"
+  ],
+  "dependencies": {}
+}

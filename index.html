@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>borg-anchor - Borg Backups with Bitcoin Timestamping</title>
+  <meta name="description" content="Deduplicated backups with cryptographic proof of existence on Bitcoin">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #2d3748;
+      --muted: #718096;
+      --accent: #3182ce;
+      --accent-light: #ebf4ff;
+      --border: #e2e8f0;
+      --code-bg: #1a202c;
+      --code-text: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+    header {
+      text-align: center;
+      padding: 4rem 0;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .tagline {
+      font-size: 1.25rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .badges img { height: 20px; }
+
+    .install-box {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 1rem;
+      display: inline-block;
+      margin-bottom: 2rem;
+    }
+    .install-box .prompt { color: #68d391; }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+    .feature {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .feature h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .feature p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    section {
+      margin: 3rem 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.5rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    code {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: var(--accent-light);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 2rem 0;
+      font-size: 1.1rem;
+    }
+    .flow-step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+    }
+    .flow-arrow { color: var(--muted); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      font-weight: 600;
+      background: var(--accent-light);
+    }
+
+    .links {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 2rem 0;
+    }
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .links a:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>borg-anchor</h1>
+      <p class="tagline">Borg backups with Bitcoin timestamping</p>
+
+      <div class="badges">
+        <a href="https://www.npmjs.com/package/@solid-live/borg-anchor">
+          <img src="https://img.shields.io/npm/v/@solid-live/borg-anchor.svg" alt="npm version">
+        </a>
+        <a href="https://www.gnu.org/licenses/agpl-3.0">
+          <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL-3.0">
+        </a>
+      </div>
+
+      <div class="install-box">
+        <span class="prompt">$</span> npm install -g @solid-live/borg-anchor
+      </div>
+    </header>
+
+    <div class="flow">
+      <div class="flow-step">Your Data</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Borg Backup</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Bitcoin Anchor</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Immortal Proof</div>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <h3>Deduplication</h3>
+        <p>Only store changes, not duplicates. Second backup of same data? Just bytes.</p>
+      </div>
+      <div class="feature">
+        <h3>Bitcoin Timestamping</h3>
+        <p>Immutable proof your backup existed at a specific point in time.</p>
+      </div>
+      <div class="feature">
+        <h3>Chained Proofs</h3>
+        <p>Each backup links to previous via UTXO chain. Fully reconstructable.</p>
+      </div>
+      <div class="feature">
+        <h3>Optional Encryption</h3>
+        <p>AES-256 encryption with repokey. Your data stays private.</p>
+      </div>
+    </div>
+
+    <section>
+      <h2>Quick Start</h2>
+      <pre><code># Initialize backup repository
+borg-anchor init ~/backups
+
+# Configure Bitcoin key
+cd ~/backups
+git config nostr.privkey &lt;your-hex-key&gt;
+
+# Create and anchor backup
+borg-anchor backup ~/mydata --name first-backup
+
+# Verify it's on Bitcoin
+borg-anchor verify first-backup</code></pre>
+    </section>
+
+    <section>
+      <h2>Commands</h2>
+      <table>
+        <thead>
+          <tr><th>Command</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>init [path]</code></td><td>Initialize borg repo and config</td></tr>
+          <tr><td><code>backup &lt;source&gt;</code></td><td>Create backup and anchor on Bitcoin</td></tr>
+          <tr><td><code>list</code></td><td>List backups and trail status</td></tr>
+          <tr><td><code>verify &lt;archive&gt;</code></td><td>Verify backup is anchored</td></tr>
+          <tr><td><code>restore &lt;archive&gt; [dest]</code></td><td>Restore backup to destination</td></tr>
+          <tr><td><code>show</code></td><td>Show config and trail status</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>How It Works</h2>
+      <ol style="margin-left: 1.5rem; color: var(--muted);">
+        <li style="margin-bottom: 0.5rem;">Borg creates a deduplicated, compressed backup with a unique fingerprint (SHA-256)</li>
+        <li style="margin-bottom: 0.5rem;">The fingerprint is committed to Bitcoin via a chained UTXO trail</li>
+        <li style="margin-bottom: 0.5rem;">Anyone can verify the backup existed at the anchored time</li>
+      </ol>
+      <p style="margin-top: 1rem; color: var(--muted);">
+        The Bitcoin transaction proves your data existed <em>before</em> the block timestamp.
+        No trust required - just math.
+      </p>
+    </section>
+
+    <section>
+      <h2>Networks</h2>
+      <table>
+        <thead>
+          <tr><th>Network</th><th>Flag</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Testnet4</td><td><code>--network tbtc4</code></td><td>Testing (free, default)</td></tr>
+          <tr><td>Mainnet</td><td><code>--network btc</code></td><td>Production (real Bitcoin)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="links">
+      <a href="https://github.com/solid-live/borg-anchor">GitHub</a>
+      <a href="https://www.npmjs.com/package/@solid-live/borg-anchor">npm</a>
+      <a href="https://borgbackup.readthedocs.io/">BorgBackup Docs</a>
+      <a href="https://solid.live">solid.live</a>
+    </div>
+
+    <footer>
+      <p>AGPL-3.0 &copy; 2026 <a href="https://melvincarvalho.com">Melvin Carvalho</a></p>
+      <p style="margin-top: 0.5rem;">Part of the <a href="https://solid.live">solid.live</a> ecosystem</p>
+    </footer>
+  </div>
+</body>
+</html>
