@@ -459,7 +459,10 @@ openssl rand -hex 32</code></pre>
 cd ~/backups
 
 <span class="comment"># Store the private key in git config (local to this repo)</span>
-git config nostr.privkey YOUR_64_CHAR_HEX_KEY</code></pre>
+git config nostr.privkey YOUR_64_CHAR_HEX_KEY
+
+<span class="comment"># Initialize blocktrails (creates .blocktrail.json)</span>
+blocktrails init</code></pre>
 
         <h4>Get your testnet address</h4>
         <p>Use blocktrails to derive your address from the private key:</p>
